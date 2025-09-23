@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudio de Verbos Irregulares</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            color: #4a4a4a;
+            margin: 0;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .modes {
+            margin-bottom: 2rem;
+        }
+        button {
+            background-color: #5b69e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4a56c4;
+        }
+        #back-button {
+            background-color: #6c757d;
+        }
+        #back-button:hover {
+            background-color: #5a6268;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f7f7f7;
+        }
+        input[type="text"] {
+            width: calc(100% - 16px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        #game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        #next-button {
+            display: none;
+            margin-top: 1rem;
+        }
+        #game-over {
+            color: #721c24;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Estudio de Verbos Irregulares</h1>
+            <button id="back-button" onclick="goBack()" style="display: none;">Volver</button>
+        </div>
+        <div class="modes">
+            <button onclick="startRandomMode()">Modo Aleatorio</button>
+            <button onclick="showReviewMode()">Modo Repaso</button>
+        </div>
+
+        <div id="game-container" style="display: none;">
+            <div id="game-info">
+                <span>Puntuación: <span id="score">0</span></span>
+                <span>Vidas: <span id="lives">3</span></span>
+            </div>
+            <p id="game-over"></p>
+            <table id="verbs-table">
+                <thead>
+                    <tr>
+                        <th>Infinitive</th>
+                        <th>Simple Past</th>
+                        <th>Participle</th>
+                        <th>Spanish</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="checkAnswers()" id="check-button">Corregir</button>
+            <button id="next-button" onclick="nextVerbs()">Siguientes 5</button>
+        </div>
+
+        <div id="review-container" style="display: none;">
+            <h2>Esquema de Repaso</h2>
+            <table id="review-table">
+                <thead>
+                    <tr>
+                        <th>Infinitive</th>
+                        <th>Simple Past</th>
+                        <th>Participle</th>
+                        <th>Spanish</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const verbs = [
+            ['to Awake', 'awoke', 'awoken', 'despertar'],
+            ['to Be (am,are,is)', 'was/were', 'been', 'ser/estar'],
+            ['to bear', 'bore', 'born', 'llevar,soportar'],
+            ['to beat', 'beat', 'beaten', 'golpear,batir'],
+            ['to become', 'became', 'become', 'convertirse en,llegar a ser'],
+            ['to begin', 'began', 'begun', 'empezar,comenzar'],
+            ['to bend', 'bent', 'bent', 'doblar'],
+            ['to bet', 'bet', 'bet', 'apostar'],
+            ['to bite', 'bit', 'bitten', 'morder'],
+            ['to bleed', 'bled', 'bled', 'sangrar'],
+            ['to blow', 'blew', 'blown', 'soplar'],
+            ['to break', 'broke', 'broken', 'romper'],
+            ['to breed', 'bred', 'bred', 'criar'],
+            ['to bring', 'brought', 'brought', 'traer'],
+            ['to build', 'built', 'built', 'construir'],
+            ['to burn', 'burnt', 'burnt', 'quemar'],
+            ['to burst', 'burst', 'burst', 'reventar'],
+            ['to buy', 'bought', 'bought', 'comprar'],
+            ['to Catch', 'caught', 'caught', 'coger'],
+            ['to choose', 'chose', 'chosen', 'elegir'],
+            ['to come', 'came', 'come', 'venir'],
+            ['to cost', 'cost', 'cost', 'costar'],
+            ['to creep', 'crept', 'crept', 'arrastrarse'],
+            ['to cut', 'cut', 'cut', 'cortar'],
+            ['to Deal', 'dealt', 'dealt', 'tratar'],
+            ['to dig', 'dug', 'dug', 'cavar'],
+            ['to do', 'did', 'done', 'hacer'],
+            ['to draw', 'drew', 'drawn', 'dibujar,tirar'],
+            ['to dream', 'dreamt', 'dreamt', 'soñar'],
+            ['to drink', 'drank', 'drunk', 'beber'],
+            ['to drive', 'drove', 'driven', 'conducir'],
+            ['to eat', 'ate', 'eaten', 'comer'],
+            ['to fall', 'fell', 'fallen', 'caer'],
+            ['to feed', 'fed', 'fed', 'alimentar, dar de comer'],
+            ['to feel', 'felt', 'felt', 'sentir(se)'],
+            ['to fight', 'fought', 'fought', 'luchar, pelear'],
+            ['to find', 'found', 'found', 'encontrar'],
+            ['to flee', 'fled', 'fled', 'huir'],
+            ['to fly', 'flew', 'flown', 'volar'],
+            ['to forbid', 'forbade', 'forbidden', 'prohibir'],
+            ['to forget', 'forgot', 'forgotten', 'olvidar'],
+            ['to forgive', 'forgave', 'forgiven', 'perdonar'],
+            ['to freeze', 'froze', 'frozen', 'helar,congelar'],
+            ['to Get', 'got', 'got', 'obtener,conseguir'],
+            ['to give', 'gave', 'given', 'dar,regalar'],
+            ['to go', 'went', 'gone', 'ir'],
+            ['to grow', 'grew', 'grown', 'crecer,cultivar'],
+            ['to Hang', 'hung', 'hung', 'colgar'],
+            ['to have', 'had', 'had', 'haber,tener'],
+            ['to hear', 'heard', 'heard', 'oir'],
+            ['to hide', 'hid', 'hidden', 'esconder'],
+            ['to hit', 'hit', 'hit', 'golpear'],
+            ['to hold', 'held', 'held', 'agarrar,mantener,sujetar'],
+            ['to hurt', 'hurt', 'hurt', 'herir,hacer daño'],
+            ['to Keep', 'kept', 'kept', 'mantener,conservar'],
+            ['to kneel', 'knelt', 'knelt', 'arrodillarse'],
+            ['to know', 'knew', 'known', 'saber,conocer'],
+            ['to Lay', 'laid', 'laid', 'poner(mesa, huevos)'],
+            ['to lead', 'led', 'led', 'dirigir'],
+            ['to leap', 'leapt', 'leapt', 'saltar'],
+            ['to learn', 'learnt', 'learnt', 'aprender'],
+            ['to leave', 'left', 'left', 'dejar,abandonar,salir,partir'],
+            ['to lend', 'lent', 'lent', 'prestar'],
+            ['to let', 'let', 'let', 'dejar,permitir'],
+            ['to lie', 'lay', 'lain', 'tumbarse, echarse'],
+            ['to light', 'lit', 'lit', 'encender'],
+            ['to lose', 'lost', 'lost', 'perder'],
+            ['to Make', 'made', 'made', 'hacer,fabricar'],
+            ['to mean', 'meant', 'meant', 'querer decir,significar'],
+            ['to meet', 'met', 'met', 'encontrar(se),reunirse'],
+            ['to Pay', 'paid', 'paid', 'pagar'],
+            ['to put', 'put', 'put', 'poner(se)'],
+            ['to Read', 'read', 'read', 'leer'],
+            ['to ride', 'rode', 'ridden', 'montar'],
+            ['to ring', 'rang', 'rung', 'sonar,llamar(timbre,telefono)'],
+            ['to rise', 'rose', 'risen', 'levantar(se)'],
+            ['to run', 'ran', 'run', 'correr'],
+            ['to say', 'said', 'said', 'decir'],
+            ['to see', 'saw', 'seen', 'ver'],
+            ['to seek', 'sought', 'sought', 'buscar'],
+            ['to sell', 'sold', 'sold', 'vender'],
+            ['to send', 'sent', 'sent', 'enviar'],
+            ['to set', 'set', 'set', 'poner'],
+            ['to shake', 'shook', 'shaken', 'coser'],
+            ['to shine', 'shone', 'shone', 'agitar'],
+            ['to shoot', 'shot', 'shot', 'brillar'],
+            ['to show', 'showed', 'shown', 'disparar'],
+            ['to shrink', 'shrank', 'shrunk', 'mostrar,enseñar'],
+            ['to shut', 'shut', 'shut', 'encoger, reducir'],
+            ['to sing', 'sang', 'sung', 'cerrar'],
+            ['to sink', 'sank', 'sunk', 'cantar'],
+            ['to sit', 'sat', 'sat', 'hundir(se)'],
+            ['to sleep', 'slept', 'slept', 'sentarse'],
+            ['to slide', 'slid', 'slid', 'dormir'],
+            ['to smell', 'smelt', 'smelt', 'deslizar(se),resbalar'],
+            ['to sow', 'sowed', 'sown', 'oler'],
+            ['to speak', 'spoke', 'spoken', 'sembrar'],
+            ['to spell', 'spelt', 'spelt', 'hablar'],
+            ['to spend', 'spent', 'spent', 'deletrear'],
+            ['to spit', 'spat', 'spat', 'gastar'],
+            ['to spread', 'spread', 'spread', 'escupir'],
+            ['to stand', 'stood', 'stood', 'extender'],
+            ['to steal', 'stole', 'stolen', 'estar de pie'],
+            ['to stick', 'stuck', 'stuck', 'robar'],
+            ['to sting', 'stung', 'stung', 'pegar(con pegamento)'],
+            ['to strike', 'struck', 'struck', 'picar (con aguijón)'],
+            ['to sweep', 'swept', 'swept', 'golpear'],
+            ['to swim', 'swam', 'swum', 'barrer'],
+            ['to Take', 'took', 'taken', 'nadar'],
+            ['to teach', 'taught', 'taught', 'tomar,coger'],
+            ['to tear', 'tore', 'torn', 'enseñar'],
+            ['to tell', 'told', 'told', 'rasgar'],
+            ['to think', 'thought', 'thought', 'decir,contar,narrar'],
+            ['to throw', 'threw', 'thrown', 'pensar'],
+            ['to Understand', 'understood', 'understood', 'lanzar, arrojar,tirar'],
+            ['to Wear', 'wore', 'worn', 'entender, comprender'],
+            ['to weave', 'wove', 'woven', 'llevar puesto'],
+            ['to weep', 'wept', 'wept', 'tejer, trenzar'],
+            ['to wet', 'wet', 'wet', 'llorar'],
+            ['to win', 'won', 'won', 'mojar, humedecer'],
+            ['to write', 'wrote', 'written', 'ganar'],
+        ];
+
+        let currentVerbs = [];
+        let usedVerbIndices = new Set();
+        let score = 0;
+        let lives = 3;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function goBack() {
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('review-container').style.display = 'none';
+            document.querySelector('.modes').style.display = 'block';
+            document.getElementById('back-button').style.display = 'none';
+        }
+
+        function startRandomMode() {
+            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('review-container').style.display = 'none';
+            document.querySelector('.modes').style.display = 'none';
+            document.getElementById('back-button').style.display = 'inline-block';
+
+            score = 0;
+            lives = 3;
+            usedVerbIndices.clear();
+            updateGameInfo();
+            document.getElementById('game-over').textContent = '';
+            document.getElementById('check-button').disabled = false;
+            nextVerbs();
+        }
+
+        function nextVerbs() {
+            const tbody = document.querySelector('#verbs-table tbody');
+            tbody.innerHTML = '';
+            currentVerbs = [];
+
+            let availableVerbs = verbs.map((_, index) => index).filter(index => !usedVerbIndices.has(index));
+            shuffle(availableVerbs);
+            
+            const verbsToShow = availableVerbs.slice(0, 5);
+
+            if (verbsToShow.length === 0) {
+                endGame(true);
+                return;
+            }
+
+            verbsToShow.forEach(index => {
+                usedVerbIndices.add(index);
+                const verb = verbs[index];
+                currentVerbs.push(verb);
+                const tr = document.createElement('tr');
+                const knownIndex = Math.floor(Math.random() * 4);
+                
+                for (let i = 0; i < 4; i++) {
+                    const td = document.createElement('td');
+                    if (i === knownIndex) {
+                        td.textContent = verb[i];
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.dataset.answer = verb[i];
+                        td.appendChild(input);
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('check-button').style.display = 'inline-block';
+            document.getElementById('next-button').style.display = 'none';
+        }
+
+        function checkAnswers() {
+            const inputs = document.querySelectorAll('#verbs-table input');
+            let allFilled = true;
+            inputs.forEach(input => {
+                if (input.value.trim() === '') {
+                    allFilled = false;
+                }
+            });
+
+            if (!allFilled) {
+                alert('Por favor, completa todos los campos.');
+                return;
+            }
+
+            let incorrectCount = 0;
+            inputs.forEach(input => {
+                const isCorrect = input.value.trim().toLowerCase() === input.dataset.answer.toLowerCase();
+                input.parentElement.className = isCorrect ? 'correct' : 'incorrect';
+                input.disabled = true;
+
+                if(isCorrect){
+                    score++;
+                } else {
+                    incorrectCount++;
+                    const correctAnswer = document.createElement('span');
+                    correctAnswer.style.display = 'block';
+                    correctAnswer.style.fontSize = '0.8em';
+                    correctAnswer.style.marginTop = '4px';
+                    correctAnswer.textContent = `Correcto: ${input.dataset.answer}`;
+                    input.parentElement.appendChild(correctAnswer);
+                }
+            });
+
+            if (incorrectCount > 0) {
+                lives--;
+            }
+
+            if(incorrectCount >= 3){
+                lives = 0;
+            }
+
+            updateGameInfo();
+
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                document.getElementById('check-button').style.display = 'none';
+                if(usedVerbIndices.size < verbs.length){
+                    document.getElementById('next-button').style.display = 'inline-block';
+                } else {
+                    endGame(true);
+                }
+            }
+        }
+
+        function updateGameInfo() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function endGame(isWin) {
+            document.getElementById('check-button').style.display = 'none';
+            document.getElementById('next-button').style.display = 'none';
+            const gameOverText = document.getElementById('game-over');
+            if(isWin){
+                gameOverText.textContent = "¡Felicidades! Has completado todos los verbos.";
+                gameOverText.style.color = '#155724';
+            } else {
+                gameOverText.textContent = "¡Has perdido! Inténtalo de nuevo.";
+            }
+
+            setTimeout(() => {
+                goBack();
+            }, 5000)
+
+        }
+
+        function showReviewMode() {
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('review-container').style.display = 'block';
+            document.querySelector('.modes').style.display = 'none';
+            document.getElementById('back-button').style.display = 'inline-block';
+
+            const tbody = document.querySelector('#review-table tbody');
+            tbody.innerHTML = '';
+            verbs.forEach(verb => {
+                const tr = document.createElement('tr');
+                verb.forEach(form => {
+                    const td = document.createElement('td');
+                    td.textContent = form;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+    </script>
+</body>
+</html>
